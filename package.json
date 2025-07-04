@@ -15,6 +15,7 @@
     "db:seed": "node scripts/seed.js",
     "health": "curl http://localhost:3000/health",
     "health:check": "node scripts/health-check.js",
+    "test:mongodb": "node scripts/test-mongodb.js",
     "generate:env": "node scripts/generate-env.js",
     "vercel:deploy": "vercel --prod"
   },
@@ -39,7 +40,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
-    "nanoid": "^5.0.4",
+    "nanoid": "^3.3.7",
     "node-fetch": "^3.3.2",
     "qrcode": "^1.5.3"
   },

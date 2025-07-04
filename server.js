@@ -54,21 +54,45 @@ app.use(express.urlencoded({
     extended: true 
 }));
 
-// MongoDB connection with better error handling
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-})
-.then(() => {
-    console.log('✅ Connected to MongoDB Atlas');
-    console.log(`📊 Database: ${mongoose.connection.name}`);
-})
-.catch(err => {
-    console.error('❌ Could not connect to MongoDB:', err);
-    process.exit(1);
-});
+// MongoDB connection with better error handling for serverless
+const connectDB = async () => {
+    try {
+        if (!process.env.MONGODB_URI) {
+            throw new Error('MONGODB_URI environment variable is not set');
+        }
+        
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+            minPoolSize: 1,
+        });
+        
+        console.log('✅ Connected to MongoDB Atlas');
+        console.log(`📊 Database: ${mongoose.connection.name}`);
+        
+        // Handle connection events
+        mongoose.connection.on('error', (err) => {
+            console.error('MongoDB connection error:', err);
+        });
+        
+        mongoose.connection.on('disconnected', () => {
+            console.log('MongoDB disconnected');
+        });
+        
+    } catch (err) {
+        console.error('❌ Could not connect to MongoDB:', err.message);
+        // In serverless, don't exit process, let it handle the error
+        if (process.env.NODE_ENV !== 'production') {
+            process.exit(1);
+        }
+    }
+};
+
+// Connect to database
+connectDB();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
