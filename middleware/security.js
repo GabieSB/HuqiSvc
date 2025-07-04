@@ -40,12 +40,27 @@ const corsOptions = {
             'http://localhost:3000',
             'http://localhost:3001',
             'http://localhost:5173',
-            'https://yourdomain.com' // Add your production domain
+            'https://yourdomain.com', // Add your production domain
+            // Add Vercel preview URLs
+            /^https:\/\/.*\.vercel\.app$/,
+            /^https:\/\/.*\.vercel\.app\/.*$/
         ];
         
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        // Check if origin matches any allowed pattern
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (typeof allowed === 'string') {
+                return allowed === origin;
+            }
+            if (allowed instanceof RegExp) {
+                return allowed.test(origin);
+            }
+            return false;
+        });
+        
+        if (isAllowed) {
             callback(null, true);
         } else {
+            console.log(`CORS blocked origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
